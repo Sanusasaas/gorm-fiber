@@ -36,7 +36,21 @@ func (r *Repository) Create(ctx *fiber.Ctx) error {
 		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"message": "price can't be 0",
 		})
-		return err
+		return nil
+	}
+
+	if car.Brand == "" {
+		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":"brand can't be empty",
+		})
+		return nil
+	}
+
+	if car.Name == "" {
+		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":"name can't be empty",
+		})
+		return nil
 	}
 	
 	err = r.DB.Create(car).Error
