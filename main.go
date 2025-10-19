@@ -25,22 +25,25 @@ type Car struct {
 func (r *Repository) Create(ctx *fiber.Ctx) error {
 	car := &Car{}
 	err := ctx.BodyParser(car)
-	if car.Price == 0 {
-		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message": "price can't be 0",
-		})
-		return err
-	}
 	if err != nil {
 		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"message": "can't parse request",
 		})
 		return err
 	}
+
+	if car.Price == 0 {
+		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message": "price can't be 0",
+		})
+		return err
+	}
+	
 	err = r.DB.Create(car).Error
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-			"message": "can't create car"})
+			"message": "can't create car",
+		})
 		return err
 	}
 	ctx.Status(http.StatusOK).JSON(&fiber.Map{
@@ -61,7 +64,8 @@ func (r *Repository) DeleteByID(ctx *fiber.Ctx) error {
 	err := r.DB.Delete(car, id).Error
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
-			"message": "can't delete this car"})
+			"message": "can't delete this car",
+		})
 		return err
 	}
 	ctx.Status(http.StatusOK).JSON(&fiber.Map{
@@ -81,7 +85,8 @@ func (r *Repository) DeleteAll(ctx *fiber.Ctx) error {
 		return err
 	}
 	ctx.Status(http.StatusOK).JSON(&fiber.Map{
-		"message": "cars was deleted"})
+		"message": "cars was deleted",
+	})
 	return nil
 }
 
@@ -94,9 +99,11 @@ func (r *Repository) ChangePrice(ctx *fiber.Ctx) error {
 		})
 		return nil
 	}
+
 	type changer struct {
 		Price float64 `json:"price"`
 	}
+
 	var request changer
 	err := ctx.BodyParser(&request)
 	if err != nil {
@@ -105,6 +112,7 @@ func (r *Repository) ChangePrice(ctx *fiber.Ctx) error {
 		})
 		return err
 	}
+
 	err = r.DB.Model(car).Where("id = ?", id).Update("price", request.Price).Error
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
@@ -123,18 +131,21 @@ func (r *Repository) GetByID(ctx *fiber.Ctx) error {
 	car := &models.Cars{}
 	if id == "" {
 		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message": "ID can't be empty"})
+			"message": "ID can't be empty",
+		})
 		return nil
 	}
 	err := r.DB.Where("id = ?", id).First(car).Error
 	if err != nil {
 		ctx.Status(http.StatusNotFound).JSON(&fiber.Map{
-			"message": "can't found car"})
+			"message": "can't found car",
+		})
 		return err
 	}
 	ctx.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "car was founded",
-		"data":    car})
+		"data":    car,
+	})
 	return nil
 }
 
@@ -149,7 +160,8 @@ func (r *Repository) GetCars(ctx *fiber.Ctx) error {
 	}
 	ctx.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "car was founded",
-		"data":    cars})
+		"data":    cars,
+	})
 	return nil
 }
 
