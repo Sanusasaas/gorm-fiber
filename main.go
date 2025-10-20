@@ -3,12 +3,12 @@ package main
 import (
 	"User/models"
 	"User/storage"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -190,10 +190,15 @@ func (r *Repository) SetupRoutes(app *fiber.App) {
 }
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
+
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to load .env file", zap.Error(err))
 	}
+
 	config := &storage.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
@@ -202,16 +207,23 @@ func main() {
 		DBName:   os.Getenv("DB_NAME"),
 		SSLMode:  os.Getenv("DB_SSLMODE"),
 	}
+
 	db, err := storage.NewConnection(config)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to connect DataBase", zap.Error(err))
 	}
 	r := Repository{DB: db}
+
 	err = models.MigrateCars(db)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to migrate DataBase", zap.Error(err))
 	}
+
+	logger.Info("Starting server...", zap.String("port","8080"))
+
 	app := fiber.New()
 	r.SetupRoutes(app)
-	app.Listen(":8080")
+	if err := app.Listen(":8080"); err!=nil {
+		logger.Error("Failed to start server", zap.Error(err))
+	}
 }
