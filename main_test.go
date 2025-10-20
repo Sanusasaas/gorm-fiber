@@ -46,3 +46,34 @@ func TestValidateCarCreate(t *testing.T) {
 		})
 	}
 }
+
+func ValidateCarUpdate(request Changer) error {
+	if request.Price == 0 {
+		return fmt.Errorf("price can't be 0")
+	}
+	return nil
+}
+
+func TestValidateCarpdate(t *testing.T) {
+	tests := []struct {
+		name          string
+		request       Changer
+		wantErr       bool
+		expectedError string
+	}{
+		{"Valid price update", Changer{Price: 2000}, false, ""},
+		{"Invalid price update", Changer{Price: 0}, true, "price can't be 0"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateCarUpdate(tt.request)
+			if tt.wantErr {
+				assert.Error(t, err, "ValidateCarUpdate() should return an error")
+				assert.EqualError(t, err, tt.expectedError, "Error message should match")
+			} else {
+				assert.NoError(t, err, "ValidateCarUpdate() should not return an error")
+			}
+		})
+	}
+}

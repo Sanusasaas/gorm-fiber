@@ -22,6 +22,10 @@ type Car struct {
 	Price float64 `json:"price"`
 }
 
+type Changer struct {
+	Price float64 `json:"price"`
+}
+
 func (r *Repository) Create(ctx *fiber.Ctx) error {
 	car := &Car{}
 	err := ctx.BodyParser(car)
@@ -41,18 +45,18 @@ func (r *Repository) Create(ctx *fiber.Ctx) error {
 
 	if car.Brand == "" {
 		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message":"brand can't be empty",
+			"message": "brand can't be empty",
 		})
 		return nil
 	}
 
 	if car.Name == "" {
 		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message":"name can't be empty",
+			"message": "name can't be empty",
 		})
 		return nil
 	}
-	
+
 	err = r.DB.Create(car).Error
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
@@ -114,12 +118,14 @@ func (r *Repository) ChangePrice(ctx *fiber.Ctx) error {
 		return nil
 	}
 
-	type changer struct {
-		Price float64 `json:"price"`
-	}
-
-	var request changer
+	var request Changer
 	err := ctx.BodyParser(&request)
+	if request.Price == 0 {
+		ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message": "price can't be 0",
+		})
+		return nil
+	}
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{
 			"message": "can't parse request",
@@ -193,7 +199,6 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
 
-
 	err := godotenv.Load(".env")
 	if err != nil {
 		logger.Fatal("failed to load .env file", zap.Error(err))
@@ -219,11 +224,11 @@ func main() {
 		logger.Fatal("failed to migrate DataBase", zap.Error(err))
 	}
 
-	logger.Info("Starting server...", zap.String("port","8080"))
+	logger.Info("Starting server...", zap.String("port", "8080"))
 
 	app := fiber.New()
 	r.SetupRoutes(app)
-	if err := app.Listen(":8080"); err!=nil {
+	if err := app.Listen(":8080"); err != nil {
 		logger.Error("Failed to start server", zap.Error(err))
 	}
 }
