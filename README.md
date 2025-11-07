@@ -30,7 +30,7 @@
 [DELETE]  /api/deleteall                Удаление всех элементов из базы данных \
 [DELETE]  /api/delete/:id               Удаление элемента из базы данных по id
 
-## Пример запроса на регистрацию:
+## Пример запроса на создание элемента:
 curl -X POST http://localhost:8080/api/create   \
   -H "Content-Type: application/json" \
   -d '{
@@ -38,6 +38,9 @@ curl -X POST http://localhost:8080/api/create   \
     "name": "Supra", \
     "price": 20000.50 \
   }'
+
+## Пример запроса на получение всех элементов из базы данных:
+curl -X GET http://localhost:8080/api/cars
 
 ## Зависимости
 
