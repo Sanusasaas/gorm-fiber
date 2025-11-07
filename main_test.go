@@ -54,7 +54,7 @@ func ValidateCarUpdate(request Changer) error {
 	return nil
 }
 
-func TestValidateCarpdate(t *testing.T) {
+func TestValidateCarUpdate(t *testing.T) {
 	tests := []struct {
 		name          string
 		request       Changer
